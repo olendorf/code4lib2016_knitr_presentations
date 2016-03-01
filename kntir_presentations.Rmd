@@ -1,0 +1,112 @@
+---
+title: "knitr_presentations"
+author: "Robert Olendorf"
+date: "March 1, 2016"
+output: html_document
+---
+
+```{r, setup, echo=FALSE, results='hide', warning=FALSE, message=FALSE, error=TRUE}
+  if(!require("pander"))
+  {
+    install.packages("pander", repos="http://cran.rstudio.com/", dependencies = TRUE)
+  }
+  
+  library("pander", lib.loc="~/Library/R/3.2/library")
+
+  framework.data <- read.csv('frameworks.csv')
+
+```
+
+## Knitr and R presentations
+
+Knitr is also a great way to make slide presentations. Knitr uses Javascript libraries like *Reveal.js* or *Deck.js* to power the slides, so if you have used those this may be familiar to you. It's not always better than PowerPoint or similar options. I like Knitr for technical talks, especially with lots of charts and data. Also they are great if you want to publish your slides on the web. Powerpoint is great when you want slides fast. Also, its easier to style and format slides in Powerpoint. Knitr takes a fair amount of HTML and CSS to create highly formatted slides.
+
+Knitr also gives us a number of methods for creating slides. The first is to choose the **_Presentation_** option when you choose to create a new Markdown file. This gives you three options. **_HTML (ioslides)_**, **_HTML (Slidy)_** and **_PDF (Beamer)_**. The first two use different Javascript frameworks to create HTML slides. The last option will convert the Markdown into LaTeX then PDF (I think). 
+
+The second method is to choose an **_R Presentation_**. This creates a *.Rpres* file thats essentially Markdown again. 
+
+The final option and the one we'll use, is to use the **_Slidify_** package. It's a little more complicated, but it also gives us more options for layouts and theming. It essentially provides an interface for several well known Javascript slide frameworks. 
+
+## Slidify
+
+### Setup
+
+First we need to load the packages. **_Slidify_**. **_Slidify_** has pretty good documentation at [slidify.org](http://slidify.org/), but its a little out of date so use the [Slidify Github](https://github.com/ramnathv/slidify) pages instead. To install the packages, first make sure the **_devtools_** package is installed. Go to the **Packages** tab on the lower right and see if **_devtools_** is listed. If it is, make sure its checked. If its not listed, click the **Install** button and enter **_devtools_** in the search box. Make sure *install dependencies* is checked and click *install*.
+
+To install **_Slidify__** we need to download two packages from Github using the following lines on the console.
+
+```r
+   install_github("ramnathv/slidify")
+   install_github("ramnathv/slidifyLibraries")
+   library('slidify)
+   library('slidifyLibraries')
+```
+
+Next we create a stub slide deck by running the following command on the console.
+
+```r
+  author('mtcars_presentation')
+```
+
+The result will be a markdown document that looks somethign like this.
+
+```markdown
+  ---
+  title       : 
+  subtitle    : 
+  author      : 
+  job         : 
+  framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+  highlighter : highlight.js  # {highlight.js, prettify, highlight}
+  hitheme     : tomorrow      # 
+  widgets     : []            # {mathjax, quiz, bootstrap}
+  mode        : selfcontained # {standalone, draft}
+  knit        : slidify::knit2slides
+  ---
+  
+  ## Read-And-Delete
+  
+  1. Edit YAML front matter
+  2. Write using R Markdown
+  3. Use an empty line followed by three dashes to separate slides!
+  
+  --- .class #id 
+  
+  ## Slide 2
+  
+  
+
+
+```
+   
+The first four lines are pretty self explanatory and are used by some frameworks to create a title slide for you. Go ahead and fill it in with your info. Next we can choose the framework. There are several to choose from listed below, some of them also have multiple themes.
+
+```{r, framework-table, echo=FALSE}
+  pander(framework.data)
+```
+
+Try some of the frameworks out. And try setting the theme as well. To set a theme, adjust your YAML front matter to look like this.
+
+```r
+  ---
+  title       : Motor Trend Cars Analysis
+  subtitle    : Lets Talk About Cars
+  author      : Robert Olendorf
+  job         : Gadabout
+  framework   : deckjs        # {io2012, html5slides, shower, dzslides, ...}
+  deckjs:
+    theme: neon
+  highlighter : highlight.js  # {highlight.js, prettify, highlight}
+  hitheme     : tomorrow      # 
+  widgets     : []            # {mathjax, quiz, bootstrap}
+  mode        : selfcontained # {standalone, draft}
+  knit        : slidify::knit2slides
+  ---
+```
+
+You will notice different frameworks have different ideas about how to display a slide show. Some have title slides, some not. Some show all the slides at once. Some frameworks have nice transitions, and clever navigation too. We'll spend our time with **_Deck.js_** only because I know it best. You can also try different code highlighter and themes. The widgets we'll get to later. They add functionality and interactivity to your slides.
+
+The last two options you shouldn't have to change. The mode determines if the slide application is selfcontained (packages all the dependences and ships them together) or allows it to make calls to external resources. Usually selfcontained is the best option. The Knit option just tells Knitr what to do.
+
+
+
