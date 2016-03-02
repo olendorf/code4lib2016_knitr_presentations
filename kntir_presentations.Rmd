@@ -110,3 +110,215 @@ The last two options you shouldn't have to change. The mode determines if the sl
 
 
 
+
+
+Then make your second slide look like this. Note. You'll need an image of a car. You can grab mine from Github or get your own. Make sure its a PNG or alter your code accordingly.
+
+### Adding Slides
+
+Our first slide can just be bullet points.
+
+```r
+  ---
+  
+  ## Some Fun Facts About cars
+  
+ 
+  ### Facts
+  
+  1. Cars have four wheels
+  2. Some cars are really fast
+  3. The Gemlin is very underrated
+  
+  ### Fictions
+  
+  1. Cars can drive them selves
+  2. We'll have flying cars in 2010
+  
+  ---
+
+```
+
+Knitr and Slidify do pretty well at organizing the material. Depending on the framework, the first heading is treated as a Deck Title, the second heading is a slide title, and other content is dealt with accordingly.
+
+We can add some actual slides now. With **_Deck.js_**, we need to add our own title slide (I think). Lets do that. EAch slides ends with three dashes `---`.
+ 
+
+Add the following first. It can be on this slide, or in the first. Needs to be before we use **_png_**.
+
+We can add slide with an image. A car seems appropriate. We are also making use of some R packages (**_png_** and **_grid_**) to make image processing and resizing possible. We need to add the conditional install of **_png_** since it doesn't come in the default packages. We also need to require both.
+
+```r
+
+  if(!require("png"))
+  {
+    install.packages("png", repos="http://cran.rstudio.com/", dependencies = TRUE)
+  }
+  library(png) 
+  
+```
+
+
+```r
+
+## Cars Look Really nice
+
+  `` `` ``{r, a cool ratrod, fig.width=8.0, echo=FALSE, fig.align='center'}
+
+   
+  library(grid)
+  img <- readPNG("assets/img/ratrod.png")
+   grid.raster(img, just="centre")
+
+  `` `` ``
+
+---
+```
+
+We can add a table too. This took some research as the original **_Pander_** table didn't work in **_Slidify_**. After some searching on Stack Overflow, I found this answer http://stackoverflow.com/questions/18810749/how-to-print-tables-in-slidify).
+
+```r
+
+  ## Another Peak At Our Data
+  
+  `` `` ``{r, mtcars-data, echo=FALSE}
+     car.data <- head(mtcars[, 1:6], 5)
+     set.alignment(row.names = 'left')
+     pander(car.data, style = 'rmarkdown', split.cells = Inf, caption = "The first nine columns of mtcars")
+  `` `` ``
+  
+  ---
+```
+
+I've also truncated the rows and columns even more to make it fit on the slide better. If you are using **_Deck.js_**, it is pretty bare. **_Io2012_** looks nicer. This can all be changed with some CSS. We can dress up the table a little now. 
+
+Adding an analysis created some problems. I finally got a nice table using **_xtable_**. 
+
+```r
+  ---
+
+  ## Analyzing The Data
+
+  `` `` ``{r, mtcars-regression, results='asis'}
+     
+    library(xtable)
+    print(xtable(summary(lm(mtcars$mpg ~ mtcars$wt))),type='html')
+  `` `` ``
+
+  ---
+```
+
+### Slide Layouts
+
+Let's make a two column slide, the regression results on one line and a plot on the other. This requires changing our slide layout. Some frameworks have that layout built-in. If your using Deckjs you have to make your own layout. You can see what layouts come with a particular frame work by looking in ` libraries\frameworks\<framework_name>\layouts `. You can specify an existing layout by putting ` &layout_file_name ` after the three dashes that end and start a slide. Knitr will look for that file in ` libraries\frameworks\<framework_name>\layouts ` or in ` assets\layouts `. The latter being where you put your custom layouts. If you have a layout in your local assets with the same name as a layout in the framework's layouts, your version gets used.
+
+Lets make a custom layout for **_deckjs_**. I pretty much just "borrowed" the code from *io2012* layouts for two column and came up with this. Save it in ` assets\layouts ` as `twocol.html`.
+
+```html
+  ---
+  layout: slide
+  ---
+  <p> foo </p>
+  {{{ slide.content }}}
+  <hr>
+  <div style='float:left;width:48%;' class='centered vert-align two-col'>
+    {{{ slide.left.html }}}
+  </div>
+  <div style='float:right;width:48%;' class='centered vert-align two-col'>
+    {{{ slide.right.html }}}
+  </div>
+```
+
+I added some classes to allow us to fix some styling with CSS later. Then in your slides make the following slide.
+
+```r
+  ---&twocol
+  
+  ## Analyzing The Data
+  
+  ### We can display two columns with a custom layout.
+  
+  *** {name: left}
+  
+  
+  `` `` ``{r, mtcars-regression, results='asis', echo=FALSE}
+     
+    library(xtable)
+    print(xtable(summary(lm(mtcars$mpg ~ mtcars$wt))),type='html')
+  `` `` ``
+  
+  *** {name: right}
+  
+  
+  `` `` ``{r, mtcars-plot, echo=FALSE}
+    plot(mtcars$wt, mtcars$mpg)
+  `` `` ``
+---
+```
+
+The result works but its ugly. We need to style the table, and see if we can vertically align. We can add custom *.css* in our ` assets\css ` directory. Slidify automatically reads and uses any *.css* file in there. Create a file and save it as `custom.css` in your `assets\css` directory. With some trial and error, I improved the display a bit with this.
+
+```html
+  .deck-container table {
+  	vertical-align: middle;
+  	height: 100%;
+    margin-right: auto;
+    margin-left: auto;
+  }
+  
+  .deck-container table, .deck-container th, .deck-container td {
+    border: 1px solid black;
+    padding: 10px;
+  }
+
+```
+
+You can also add classes and IDs to your slides. Its very easy. Just do somethign like this.
+
+```r
+  --- .fun-facts #about-cars
+  
+  ## Some Fun Facts About cars
+  
+  ### Facts
+  
+  1. Cars have four wheels
+  2. Some cars are really fast
+  3. The Gemlin is very underrated
+  
+  ### Fictions
+  
+  1. Cars can drive them selves
+  2. We'll have flying cars in 2010
+  
+  ---
+  
+```
+
+The html will look somethign like this. Each slide is a `<section>` and the class and ID get inserted there.
+
+```html
+  <section class="slide fun-facts" id="about-cars">
+    <h2>Some Fun Facts About cars</h2>
+    <h3>Facts</h3>
+  
+    <ol>
+      <li>Cars have four wheels</li>
+      <li>Some cars are really fast</li>
+      <li>The Gemlin is very underrated</li>
+    </ol>
+    
+    <h3>Fictions</h3>
+    
+    <ol>
+      <li>Cars can drive them selves</li>
+      <li>We&#39;ll have flying cars in 2010</li>
+    </ol>
+  
+  </section>
+```
+
+We'll look a bit more of slides in the when we explore Shiny. We can make slides more interactive there.
+
+
+
